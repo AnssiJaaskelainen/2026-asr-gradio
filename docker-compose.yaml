@@ -1,0 +1,59 @@
+services:
+  api:
+    build: .
+    profiles:
+      - gpu
+    ports:
+      - "10001:10001"
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - WHISPER_MODEL=medium
+    command: python api.py
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  api-cpu:
+    build: .
+    profiles:
+      - cpu
+    ports:
+      - "10001:10001"
+    environment:
+      - WHISPER_MODEL=medium
+    command: python api.py
+
+  gradio:
+    build: .
+    profiles:
+      - gpu
+    ports:
+      - "10002:10002"
+    environment:
+      - API_URL=http://api:10001
+    command: python app.py
+    depends_on:
+      - api
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  gradio-cpu:
+    build: .
+    profiles:
+      - cpu
+    ports:
+      - "10002:10002"
+    environment:
+      - API_URL=http://api-cpu:10001
+    command: python app.py
+    depends_on:
+      - api-cpu
