@@ -1,0 +1,6 @@
+gradio>=6.26.0
+faster-whisper>=1.2.1
+torch>=2.4.0
+torchaudio>=2.4.0
+nvidia-cublas-cu12
+nvidia-cudnn-cu12>=9.*
