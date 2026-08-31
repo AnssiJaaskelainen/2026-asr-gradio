@@ -1,0 +1,20 @@
+{
+    "models": [
+        {
+            "id": "tiny",
+            "name": "Tiny (39M)",
+            "description": "Whisper tiny == Fastest but not that accurate"
+        },
+        {
+            "id": "medium",
+            "name": "Medium (769M)",
+            "description": "Whisper medium == Balances speed and accuracy"
+        },
+        {
+            "id": "large-v3",
+            "name": "Large v3 (1550M)",
+            "description": "Whisper large-v3 == Best accuracy but slowest"
+        }
+    ],
+    "default": "medium"
+}

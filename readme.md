@@ -1,7 +1,8 @@
 # Whisper ASR Gradio App
 
-A simple, standalone ASR (Automatic Speech Recognition) web interface using OpenAI's Whisper model with the faster-whisper backend and Gradio UI.
+A speech recognition web interface using OpenAI's Whisper model with the faster-whisper backend, FastAPI, and Gradio UI.
 
+**Architecture:** FastAPI backend (port 10001) + Gradio frontend (port 10002)  
 **Works on both CPU and GPU automatically.**
 
 ---
@@ -9,32 +10,92 @@ A simple, standalone ASR (Automatic Speech Recognition) web interface using Open
 ## What It Does
 
 - Transcribes audio/video files to text using the Whisper model
+- Supports batch transcription of multiple files simultaneously
+- Extracts and transcribes files from ZIP, TAR, and TAR.GZ archives
 - Supports 16+ languages: English, Finnish, Swedish, German, French, Spanish, Chinese, Japanese, Korean, Russian, Portuguese, Italian, Polish, Dutch, Arabic, and auto-detection
 - Includes word-level timestamps (optional)
 - Works on CPU or GPU automatically
 
 ---
 
+## Architecture
+
+```text
+┌─────────────┐      ┌─────────────┐
+│   Gradio    │ ───► │   FastAPI   │
+│ (Frontend)  │ API  │ (Backend)   │
+│ port 10002  │      │ port 10001  │
+└─────────────┘      └─────────────┘
+```
+
+The FastAPI backend handles model loading and transcription. The Gradio frontend provides the web UI and communicates with the API.
+
+---
+
 ## Quick Start
 
-### Option 1: Local Installation
+### Docker Compose
 
 ```bash
-mkdir -p simple_asr && cd simple_asr
+# Build GPU services
+docker compose --profile gpu build
+
+# Build CPU services
+docker compose --profile cpu build
+
+# Start services (GPU mode)
+docker compose --profile gpu up -d
+
+# Start services (CPU only mode)
+docker compose --profile cpu up -d
+
+# Stop services
+docker compose down
+
+# Stop and remove volumes
+docker compose down -v
+```
+
+Available endpoints:
+
+- Gradio UI: http://localhost:10002
+- API Docs: http://localhost:10001/docs
+
+### Local Installation
+
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
+```
+
+Run both services:
+
+```bash
+# Terminal 1 - FastAPI backend
+python api.py
+
+# Terminal 2 - Gradio frontend
 python app.py
 ```
 
-Open http://localhost:10002 in your browser.
+Open `http://localhost:10002` in your browser.
 
-### Option 2: Docker
+---
 
-```bash
-docker build -t whisper-asr .
-docker run --gpus all -p 10002:10002 whisper-asr
-```
+## Usage
 
-Open http://localhost:10002 in your browser.
+### Single File
+
+Upload one audio or video file for transcription.
+
+### Multiple Files
+
+Upload multiple audio/video files at once. Files are processed in parallel for faster results.
+
+### Archive
+
+Upload a ZIP, TAR, or TAR.GZ archive containing multiple audio/video files. The archive will be extracted and all valid files will be transcribed.
 
 ---
 
@@ -42,7 +103,10 @@ Open http://localhost:10002 in your browser.
 
 - Python 3.10+
 - ffmpeg
-- For GPU: NVIDIA GPU + CUDA 12.x + NVIDIA Container Toolkit
+- For GPU:
+  - NVIDIA GPU
+  - CUDA 12.x
+  - NVIDIA Container Toolkit
 
 ---
 
@@ -51,11 +115,14 @@ Open http://localhost:10002 in your browser.
 | Variable | Default | Description |
 |-----------|---------|-------------|
 | `WHISPER_MODEL` | `medium` | Model size: `tiny`, `base`, `small`, `medium`, `large-v3`, `distil-large-v3` |
+| `API_URL` | `http://localhost:10001` | FastAPI backend URL (Gradio only) |
+| `API_DOCS_URL` | `http://localhost:10001/docs` | API documentation URL (Gradio only) |
+| `PUBLIC_HOST` | `localhost` | Public host IP/domain for API links |
 
 Example:
 
 ```bash
-WHISPER_MODEL=tiny python app.py
+WHISPER_MODEL=tiny python api.py
 ```
 
 ---
@@ -73,13 +140,80 @@ WHISPER_MODEL=tiny python app.py
 
 ---
 
-## Usage
+## API Endpoints
 
-1. Open the web interface at http://localhost:10002
-2. Upload an audio or video file (MP3, WAV, MP4, MKV, etc.)
-3. Select a language or leave as **Auto** for automatic detection
-4. Check **Include Timestamps** for word-level timing
-5. Click **Transcribe** and wait for results
+### Health Check
+
+```bash
+curl http://localhost:10001/health
+```
+
+### Transcribe Single File
+
+```bash
+curl -X POST "http://localhost:10001/transcribe?language=auto&return_timestamps=false" \
+  -F "file=@audio.mp3"
+```
+
+### Transcribe Multiple Files
+
+```bash
+curl -X POST "http://localhost:10001/transcribe-batch?language=auto&return_timestamps=false" \
+  -F "files=@file1.mp3" \
+  -F "files=@file2.mp3" \
+  -F "files=@file3.wav"
+```
+
+### Transcribe Archive
+
+```bash
+curl -X POST "http://localhost:10001/transcribe-archive?language=auto&return_timestamps=false" \
+  -F "archive=@files.zip"
+```
+
+---
+
+## Response Format
+
+```json
+{
+  "text": "Transcribed text here",
+  "language": "en",
+  "language_probability": 0.99,
+  "model": "medium",
+  "device": "cuda",
+  "segments": [
+    {
+      "start": 0.0,
+      "end": 2.5,
+      "text": "Transcribed text here"
+    }
+  ]
+}
+```
+
+### Batch / Archive Response Format
+
+```json
+{
+  "total": 3,
+  "successful": 2,
+  "failed": 1,
+  "model": "medium",
+  "device": "cuda",
+  "results": [
+    {
+      "filename": "audio1.mp3",
+      "text": "Transcribed text",
+      "language": "en",
+      "language_probability": 0.99,
+      "segments": [],
+      "success": true,
+      "error": null
+    }
+  ]
+}
+```
 
 ---
 
@@ -102,13 +236,22 @@ WHISPER_MODEL=tiny python app.py
 - MOV
 - WEBM
 
+### Archives
+
+- ZIP
+- TAR
+- TAR.GZ
+- TGZ
+
 ---
 
 ## Files
 
-- `app.py` - Main Gradio application
+- `api.py` - FastAPI backend service
+- `app.py` - Gradio frontend service
 - `requirements.txt` - Python dependencies
 - `Dockerfile` - Docker image definition
+- `docker-compose.yml` - Multi-container orchestration
 - `README.md` - This file
 
 ---
@@ -119,12 +262,12 @@ WHISPER_MODEL=tiny python app.py
 
 This is normal if running on CPU. The application will automatically fall back to CPU mode.
 
-### GPU Not Detected in Docker
+### GPU Not Detected in Docker Compose
 
-Make sure you have the NVIDIA Container Toolkit installed and are using the GPU flag:
+Make sure you have the NVIDIA Container Toolkit installed:
 
 ```bash
-docker run --gpus all -p 10002:10002 whisper-asr
+docker compose --profile gpu up -d
 ```
 
 ### Slow Transcription on CPU
@@ -132,11 +275,7 @@ docker run --gpus all -p 10002:10002 whisper-asr
 Use a smaller model for faster results:
 
 ```bash
-WHISPER_MODEL=base python app.py
+WHISPER_MODEL=base python api.py
 ```
 
----
-
-## License
-
-MIT License — Use freely for personal and commercial projects.
+### Cannot Connect
