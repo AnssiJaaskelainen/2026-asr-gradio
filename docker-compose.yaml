@@ -15,10 +15,9 @@ services:
       - MAX_ARCHIVE_FILES=${MAX_ARCHIVE_FILES:-100}
       - CORS_ORIGINS=${CORS_ORIGINS:-*}
       - PUBLIC_HOST=${PUBLIC_HOST:-localhost}
-      - HF_HOME=/root/.cache/huggingface
+      - HF_HOME=/app/caches/huggingface
     volumes:
-      - whisper-cache:/root/.cache
-      - ./config:/app/config:ro
+      - ./caches:/app/caches
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:10001/health"]
       interval: 30s
@@ -40,7 +39,7 @@ services:
       - API_URL=http://api:10001
       - API_DOCS_URL=http://${PUBLIC_HOST}:10001/docs
       - WHISPER_MODEL=${WHISPER_MODEL:-medium}
-      - HF_HOME=/root/.cache/huggingface
+      - HF_HOME=/app/caches/huggingface
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
@@ -53,7 +52,3 @@ services:
       api:
         condition: service_healthy
     command: ["python3", "/app/app.py"]
-
-volumes:
-  whisper-cache:
-    driver: local
