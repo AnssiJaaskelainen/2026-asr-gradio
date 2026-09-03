@@ -1,6 +1,5 @@
-# syntax=docker/dockerfile:1.4
-
-FROM ubuntu:24.04
+# syntax=docker/dockerfile:1.4  
+FROM python:3.12-slim
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -10,33 +9,28 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /app
 
+# Create directories
+RUN mkdir -p /app/models /app/caches /app/config
+
 # Install system dependencies
+# Removed redundant python/pip installs as they are in the base image
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    python3-venv \
-    python3-pip \
-    python3-full \
     ffmpeg \
-    libsndfile1 \
     curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && ln -s /usr/bin/python3 /usr/bin/python
-
-# Install PyTorch (CPU by default, override for GPU in docker-compose)
-ARG TORCH_INDEX=https://download.pytorch.org/whl/cpu
-ARG TORCH_PACKAGES=torch==2.13.0 torchvision torchaudio
-RUN pip install --no-cache-dir --break-system-packages ${TORCH_PACKAGES} --index-url ${TORCH_INDEX}
-
-# Install faster-whisper and other dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir --break-system-packages -r requirements.txt
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy application files
+COPY requirements.txt .
 COPY api.py app.py ./
+COPY config/ ./config/
+
+# Install dependencies
+RUN pip install --break-system-packages -r requirements.txt
 
 EXPOSE 10001 10002
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
     CMD curl -f http://localhost:10001/health || exit 1
 
 CMD ["python3", "/app/api.py"]

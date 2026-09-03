@@ -1,53 +1,31 @@
 services:
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        TORCH_INDEX: ${TORCH_INDEX:-https://download.pytorch.org/whl/cpu}
-        TORCH_PACKAGES: torch==2.13.0 torchvision torchaudio
+    build: .
     ports:
       - "10001:10001"
-    environment:
-      - WHISPER_MODEL=${WHISPER_MODEL:-medium}
-      - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-500}
-      - MAX_BATCH_SIZE=${MAX_BATCH_SIZE:-20}
-      - MAX_ARCHIVE_FILES=${MAX_ARCHIVE_FILES:-100}
-      - CORS_ORIGINS=${CORS_ORIGINS:-*}
-      - PUBLIC_HOST=${PUBLIC_HOST:-localhost}
-      - HF_HOME=/app/caches/huggingface
+    env_file:
+      - .env
     volumes:
       - ./caches:/app/caches
+      - ./models:/app/models
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:10001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 120s
-    command: ["python3", "/app/api.py"]
+      start_period: 180s
+    deploy:
+      resources:
+        limits:
+          memory: ${API_MEMORY_LIMIT:-16g}
+    # command removed: using Dockerfile CMD
 
   gradio:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        TORCH_INDEX: ${TORCH_INDEX:-https://download.pytorch.org/whl/cpu}
-        TORCH_PACKAGES: torch==2.13.0 torchvision torchaudio
+    build: .
     ports:
       - "10002:10002"
-    environment:
-      - API_URL=http://api:10001
-      - API_DOCS_URL=http://${PUBLIC_HOST}:10001/docs
-      - WHISPER_MODEL=${WHISPER_MODEL:-medium}
-      - HF_HOME=/app/caches/huggingface
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10002"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+    env_file:
+      - .env
     depends_on:
       api:
         condition: service_healthy
