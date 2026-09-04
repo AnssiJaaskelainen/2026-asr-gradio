@@ -1,7 +1,6 @@
 services:
   api:
     build: .
-    user: "${UID}:${GID}"
     ports:
       - "10001:10001"
     env_file:
@@ -9,8 +8,10 @@ services:
     environment:
       - TZ=${TZ:-UTC}
     volumes:
-      - ./caches:/app/caches
-      - ./models:/app/models
+      # CHANGED: Use named volumes for models and caches (Internal Linux Speed/Permissions)
+      - whisper_caches:/app/caches
+      - whisper_models:/app/models
+      # KEEP: Bind mount for transcripts (So you can see the .txt files in Windows)
       - ./transcripts:/transcripts
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
@@ -27,7 +28,6 @@ services:
 
   gradio:
     build: .
-    user: "${UID}:${GID}"
     ports:
       - "10002:10002"
     env_file:
@@ -42,3 +42,8 @@ services:
       api:
         condition: service_healthy
     command: ["python3", "/app/app.py"]
+
+# THIS SECTION IS REQUIRED FOR NAMED VOLUMES
+volumes:
+  whisper_models:
+  whisper_caches:
