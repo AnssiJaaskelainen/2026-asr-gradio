@@ -36,7 +36,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, Form, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.background import BackgroundTask # Correct import for Response background tasks
+from starlette.background import BackgroundTask 
 from pydantic import BaseModel
 
 # =============================================================================
@@ -215,7 +215,6 @@ app = FastAPI(title="Whisper ASR API")
 app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS.split(","), allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 executor = ThreadPoolExecutor(max_workers=HARDWARE_INFO.workers)
 
-# Mount static files so the volume is accessible via HTTP: http://localhost:10001/static/transcripts/...
 if os.path.exists(TRANSCRIPTS_DIR):
     app.mount("/static/transcripts", StaticFiles(directory=TRANSCRIPTS_DIR), name="transcripts")
     logger.info(f"📂 Serving transcriptions from {TRANSCRIPTS_DIR} at /static/transcripts")
@@ -366,6 +365,13 @@ async def transcribe_archive(
         for ext in ALLOWED_EXTENSIONS:
             extracted_files.extend([str(p) for p in Path(tmp_dir).rglob(f"*{ext}")])
         
+        # Validation: Ensure there are files to process
+        if not extracted_files:
+            raise HTTPException(
+                status_code=400, 
+                detail="No supported filetypes found inside the uploaded archive file. Please ensure it contains supported audio or video files."
+            )
+        
         loop = asyncio.get_running_loop()
         tasks = [loop.run_in_executor(executor, transcribe_single_file, fp, language, return_timestamps, valid_model) for fp in extracted_files]
         raw_results = await asyncio.gather(*tasks)
@@ -385,7 +391,6 @@ async def transcribe_archive(
 
 @app.get("/transcripts")
 async def list_transcripts():
-    """Returns a structured list of all transcription sessions and their files."""
     if not os.path.exists(TRANSCRIPTS_DIR):
         return {"sessions": []}
     
@@ -403,7 +408,6 @@ async def list_transcripts():
 
 @app.get("/transcripts/archive")
 async def download_all_transcripts():
-    """Zips the entire /transcripts volume and returns it as a single download."""
     if not os.path.exists(TRANSCRIPTS_DIR):
         raise HTTPException(status_code=404, detail="No transcriptions found to archive.")
 

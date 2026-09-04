@@ -38,6 +38,7 @@ class WhisperAPIClient:
     @property
     def client(self) -> httpx.Client:
         if self._client is None:
+            # We use the default timeout for general requests
             self._client = httpx.Client(base_url=self.base_url, timeout=self.timeout, follow_redirects=True)
         return self._client
 
@@ -102,7 +103,7 @@ class WhisperAPIClient:
                         except (json.JSONDecodeError, UnicodeDecodeError):
                             continue
 
-    def transcribe_archive(self, archive_path: str, language: str = "auto", return_timestamps: bool = False, model: Optional[str] = None) -> dict:
+    def transcribe_archive(self, archive_path: str, language: str = "auto", return_timestamps: bool = False, model: Optional[str] = None):
         with open(archive_path, "rb") as f:
             parts = [
                 ("archive", (Path(archive_path).name, f)),
@@ -111,7 +112,10 @@ class WhisperAPIClient:
             ]
             if model:
                 parts.append(("model_id", (None, model)))
-            response = self.client.post("/transcribe-archive", files=parts)
+            
+            # FIX: Explicitly set timeout=None here because archive processing 
+            # can take significantly longer than the default API_TIMEOUT.
+            response = self.client.post("/transcribe-archive", files=parts, timeout=None)
             response.raise_for_status()
             return response.json()
 
@@ -213,7 +217,6 @@ def handle_single_transcription(file, lang, timestamps, model, live_updates, pro
                     all_segments.append(segment_data)
                     full_text_accumulator.append(text)
                     
-                    # FIX: format the display text in real-time if timestamps are enabled
                     current_display_text = format_transcription_text(all_segments, timestamps) if timestamps else " ".join(full_text_accumulator)
                     
                     seg_end = event.get("end", 0.0)
@@ -269,19 +272,30 @@ def handle_archive_transcription(archive, lang, timestamps, model):
     if not archive: raise gr.Error("Please upload an archive")
     
     session_dir = get_session_dir()
-    result = api_client.transcribe_archive(archive.name, lang, timestamps, model)
-    results_list = result.get("results", [])
     
-    download_files = []
-    summaries = []
-    
-    for r in results_list:
-        fname = r.get("filename", "unknown")
-        final_text = format_transcription_text(r.get("segments", []), timestamps) if timestamps else r.get("text", "")
-        summaries.append(f"**{fname}**: {r.get('text', '')[:100]}...")
-        download_files.append(save_text_to_volume(session_dir, fname, final_text))
+    try:
+        result = api_client.transcribe_archive(archive.name, lang, timestamps, model)
+        results_list = result.get("results", [])
         
-    return "\n\n".join(summaries), f"✓ Processed {len(results_list)} files", download_files
+        download_files = []
+        summaries = []
+        
+        for r in results_list:
+            fname = r.get("filename", "unknown")
+            final_text = format_transcription_text(r.get("segments", []), timestamps) if timestamps else r.get("text", "")
+            summaries.append(f"**{fname}**: {r.get('text', '')[:100]}...")
+            download_files.append(save_text_to_volume(session_dir, fname, final_text))
+            
+        return "\n\n".join(summaries), f"✓ Processed {len(results_list)} files", download_files
+
+    except httpx.HTTPStatusError as e:
+        try:
+            error_detail = e.response.json().get("detail", str(e))
+        except Exception:
+            error_detail = str(e)
+        return f"❌ **Error**: {error_detail}", "❌ Failed", []
+    except Exception as e:
+        return f"❌ **System Error**: {str(e)}", "❌ Failed", []
 
 # =============================================================================
 # Interface Build
@@ -348,7 +362,6 @@ def build_interface():
 
 def main():
     interface = build_interface()
-    # FIX: Added allowed_paths to allow Gradio to access and serve files from the /transcripts volume
     interface.launch(
         server_name="0.0.0.0", 
         server_port=int(os.environ.get("GRADIO_SERVER_PORT", "10002")),
