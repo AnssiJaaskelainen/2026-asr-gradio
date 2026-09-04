@@ -1,0 +1,38 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.continue
+
+# Models (optional - comment out if you want to commit models)
+models/
+
+# Caches
+caches/
+*.cache
+
+
+# produced transscripts
+transcripts/
+# Logs
+*.log
+logs/

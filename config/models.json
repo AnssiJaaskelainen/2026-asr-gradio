@@ -1,0 +1,35 @@
+{
+    "models": [
+        {
+            "id": "tiny",
+            "name": "Tiny (39M)",
+            "description": "Whisper tiny == Fastest but not that accurate"
+        },
+        {
+            "id": "base",
+            "name": "Base (74M)",
+            "description": "Whisper base == Good balance of speed"
+        },
+        {
+            "id": "small",
+            "name": "Small (244M)",
+            "description": "Whisper small == Better accuracy"
+        },
+        {
+            "id": "medium",
+            "name": "Medium (769M)",
+            "description": "Whisper medium == Balances speed and accuracy"
+        },
+        {
+            "id": "large-v3-turbo",
+            "name": "Large-v3 Turbo (809M)",
+            "description": "Whisper large-v3-turbo == 4x faster than large-v3"
+        },
+        {
+            "id": "large-v3",
+            "name": "Large v3 (1550M)",
+            "description": "Whisper large-v3 == Best accuracy but slowest"
+        }
+    ],
+    "default": "large-v3-turbo"
+}

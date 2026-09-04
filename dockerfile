@@ -1,28 +1,36 @@
-# Simple ASR Gradio Dockerfile - CPU & GPU
-FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+# syntax=docker/dockerfile:1.4  
+FROM python:3.12-slim
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PYTHONUNBUFFERED=1
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    python3.10 python3-pip python3.10-dev \
-    ffmpeg libsndfile1 curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && ln -s /usr/bin/python3.10 /usr/bin/python
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
 
-# Install NVIDIA libraries for faster-whisper GPU support
-RUN pip install --no-cache-dir \
-    nvidia-cublas-cu12 nvidia-cudnn-cu12
+# Create directories
+RUN mkdir -p /app/models /app/caches /app/config
 
-# Copy and install app
+# Install system dependencies
+# Removed redundant python/pip installs as they are in the base image
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    curl \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy application files
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY api.py app.py ./
+COPY config/ ./config/
 
-COPY . .
+# Install dependencies
+RUN pip install --break-system-packages -r requirements.txt
 
-EXPOSE 7860
+EXPOSE 10001 10002
 
-CMD ["python", "app.py"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
+    CMD curl -f http://localhost:10001/health || exit 1
+
+CMD ["python3", "/app/api.py"]

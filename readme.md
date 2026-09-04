@@ -1,142 +1,197 @@
-# Whisper ASR Gradio App
+# 🎙️ Whisper ASR - Audio & Video Transcription
 
-A simple, standalone ASR (Automatic Speech Recognition) web interface using OpenAI's Whisper model with the faster-whisper backend and Gradio UI.
+Turn your audio and video files into text automatically. This application uses OpenAI's Whisper model and runs on your own hardware (CPU or GPU).
 
-**Works on both CPU and GPU automatically.**
-
----
-
-## What It Does
-
-- Transcribes audio/video files to text using the Whisper model
-- Supports 16+ languages: English, Finnish, Swedish, German, French, Spanish, Chinese, Japanese, Korean, Russian, Portuguese, Italian, Polish, Dutch, Arabic, and auto-detection
-- Includes word-level timestamps (optional)
-- Works on CPU or GPU automatically
+> 📖 **For complete documentation, advanced features, and API reference, see [full-guide.md](./full-guide.md)**
 
 ---
 
-## Quick Start
+## 🚀 Quick Start (Windows + Docker Desktop)
 
-### Option 1: Local Installation
+### Prerequisites
 
-```bash
-mkdir -p simple_asr && cd simple_asr
-pip install -r requirements.txt
-python app.py
+| Requirement | Description |
+|-------------|-------------|
+| Windows | 10 or 11 |
+| Docker Desktop | 4.0+ (with WSL 2 enabled) |
+
+### Step 1: Create the transcripts folder
+
+Create an empty folder named `transcripts` in your project directory. This is where your transcriptions will be saved.
+
+```
+📁 your-project-folder/
+   ├── 📁 api.py
+   ├── 📁 app.py
+   ├── 📁 config/
+   ├── 📁 dockerfile
+   ├── 📁 docker-compose.yaml
+   └── 📁 transcripts/    ← Create this folder
 ```
 
-Open http://localhost:10002 in your browser.
+### Step 2: Open Docker Desktop's terminal
 
-### Option 2: Docker
+1. Open **Docker Desktop** from the Start menu
+2. Wait until it shows **"Docker Desktop is running"** in the system tray
+3. Right-click the Docker icon in the system tray → **"Open in terminal"**
 
-```bash
-docker build -t whisper-asr .
-docker run --gpus all -p 10002:10002 whisper-asr
-```
-
-Open http://localhost:10002 in your browser.
-
----
-
-## Requirements
-
-- Python 3.10+
-- ffmpeg
-- For GPU: NVIDIA GPU + CUDA 12.x + NVIDIA Container Toolkit
-
----
-
-## Environment Variables
-
-| Variable | Default | Description |
-|-----------|---------|-------------|
-| `WHISPER_MODEL` | `medium` | Model size: `tiny`, `base`, `small`, `medium`, `large-v3`, `distil-large-v3` |
-
-Example:
+### Step 3: Start the application
 
 ```bash
-WHISPER_MODEL=tiny python app.py
+cd C:\path\to\your\project-folder
+docker compose up -d --build
+```
+
+Wait about 30 seconds for the first-time setup (it downloads the AI model).
+
+### Step 4: Open the app
+
+Open your browser and go to:
+
+```
+http://localhost:10002
+```
+
+You should see the Whisper ASR interface with a green **"API Connected"** status.
+
+### Step 5: Transcribe your first file
+
+1. Click **📝 Single Transcribe**
+2. Upload an audio or video file
+3. Click **⚡ Transcribe**
+4. Your transcription appears below, and a `.txt` file is saved to the `transcripts` folder
+
+### Stopping the application
+
+```bash
+docker compose down
 ```
 
 ---
 
-## Model Sizes
+## 🌟 What Can It Do?
 
-| Model | Parameters | VRAM | Relative Speed |
-|---------|-----------|--------|----------------|
-| tiny | 39M | ~1GB | 32x |
-| base | 74M | ~1GB | 16x |
-| small | 244M | ~2GB | 6x |
-| medium | 769M | ~5GB | 2x |
-| large-v3 | 1550M | ~10GB | 1x |
-| distil-large-v3 | 810M | ~5GB | ~1.5x |
+### 📄 Single File
+Upload one audio or video file and get a transcription instantly.
+
+### 📚 Batch Processing
+Upload multiple files at once. They're processed automatically in a queue.
+
+### 📦 Archives
+Upload a `.zip` or `.tar` file containing multiple media files. The app extracts and transcribes everything inside.
+
+### 🌍 Languages
+- **Auto Detect** - Automatically identify the spoken language
+- **Manual Selection** - Choose from 100+ supported languages
+
+### ⏱️ Timestamps
+Enable timestamps to see when each segment was spoken:
+
+```
+[00:00.00 -> 00:05.23] Hello, welcome to the meeting.
+[00:05.25 -> 00:10.45] Today we'll discuss the results.
+```
+
+### ⚡ Live Updates
+Watch the transcription appear in real-time as the AI processes your file.
 
 ---
 
-## Usage
+## 🤖 Available Models
 
-1. Open the web interface at http://localhost:10002
-2. Upload an audio or video file (MP3, WAV, MP4, MKV, etc.)
-3. Select a language or leave as **Auto** for automatic detection
-4. Check **Include Timestamps** for word-level timing
-5. Click **Transcribe** and wait for results
+| Model | Speed | Accuracy | Memory | Best For |
+|-------|-------|----------|--------|----------|
+| **tiny** | 🚀🚀🚀🚀🚀 | 📉 | ~1 GB | Quick previews |
+| **base** | 🚀🚀🚀🚀 | 📉📉 | ~1 GB | Fast transcription |
+| **small** | 🚀🚀🚀 | 📉📉📉 | ~2 GB | General use |
+| **medium** | 🚀🚀 | 📉📉📉📉 | ~3 GB | Better accuracy |
+| **large-v3-turbo** | 🚀🚀🚀 | 📉📉📉📉 | ~3 GB | ⭐ Recommended |
+| **large-v3** | 🚀 | 📉📉📉📉📉 | ~6 GB | Maximum accuracy |
+
+> **Default:** `large-v3-turbo` provides the best balance of speed and accuracy.
 
 ---
 
-## Supported File Formats
+## 📂 Supported Formats
 
 ### Audio
-
-- MP3
-- WAV
-- FLAC
-- OGG
-- M4A
-- AAC
+```
+.mp3   .wav   .m4a   .flac   .ogg   .opus
+```
 
 ### Video
-
-- MP4
-- MKV
-- AVI
-- MOV
-- WEBM
-
----
-
-## Files
-
-- `app.py` - Main Gradio application
-- `requirements.txt` - Python dependencies
-- `Dockerfile` - Docker image definition
-- `README.md` - This file
-
----
-
-## Troubleshooting
-
-### CUDA Not Available Warning
-
-This is normal if running on CPU. The application will automatically fall back to CPU mode.
-
-### GPU Not Detected in Docker
-
-Make sure you have the NVIDIA Container Toolkit installed and are using the GPU flag:
-
-```bash
-docker run --gpus all -p 10002:10002 whisper-asr
+```
+.mp4   .avi   .mkv   .mov   .webm   .flv
 ```
 
-### Slow Transcription on CPU
-
-Use a smaller model for faster results:
-
-```bash
-WHISPER_MODEL=base python app.py
+### Archives
+```
+.zip   .tar   .gz   .tgz
 ```
 
 ---
 
-## License
+## 🔧 Troubleshooting
 
-MIT License — Use freely for personal and commercial projects.
+### "Docker Desktop is not running"
+Start Docker Desktop from the Start menu and wait for it to fully initialize.
+
+### "Port 10001/10002 is already in use"
+Stop the conflicting application or check if the app is already running:
+```bash
+docker compose ps
+```
+
+### "Permission denied on transcripts folder"
+1. Ensure the `transcripts` folder exists before starting Docker
+2. Try running Docker Desktop as Administrator
+
+### "It's too slow!"
+1. **Enable GPU:** Install NVIDIA Container Toolkit and ensure GPU is available
+2. **Use a faster model:** Select `small` or `base` in the dropdown
+3. **Limit CPU:** Edit `.env` and set `WHISPER_THREADS=4`
+
+### "API shows as disconnected"
+Check if containers are running:
+```bash
+docker compose ps
+```
+View logs:
+```bash
+docker compose logs api
+```
+
+---
+
+## 📊 Check Application Status
+
+View real-time logs:
+```bash
+docker compose logs -f
+```
+
+Restart the application:
+```bash
+docker compose restart
+```
+
+---
+
+## 📖 More Information
+
+For complete documentation including:
+- REST API reference
+- Python client examples
+- Advanced configuration
+- Production deployment guide
+
+**See [full-guide.md](./full-guide.md)**
+
+---
+
+## 🙏 Acknowledgments
+
+- [OpenAI Whisper](https://github.com/openai/whisper)
+- [faster-whisper](https://github.com/SYSTRAN/faster-whisper)
+- [Gradio](https://gradio.app/)
+- [FastAPI](https://fastapi.tiangolo.com/)
