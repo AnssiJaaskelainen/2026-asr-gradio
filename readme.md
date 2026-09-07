@@ -108,7 +108,7 @@ Upload a `.zip` or `.tar` file containing multiple media files. The app extracts
 
 ### 🌍 Languages
 - **Auto Detect** - Automatically identify the spoken language
-- **Manual Selection** - Choose from 100+ supported languages
+- **Manual Selection** - Currently only Finnish and English in list, but feel free to update
 
 ### ⏱️ Timestamps
 Enable timestamps to see when each segment was spoken:
@@ -120,6 +120,7 @@ Enable timestamps to see when each segment was spoken:
 
 ### ⚡ Live Updates
 Watch the transcription appear in real-time as the AI processes your file.
+- This is active only in single file mode
 
 ---
 
@@ -175,7 +176,7 @@ docker compose ps
 ### "It's too slow!"
 1. **Enable GPU:** Install NVIDIA Container Toolkit and ensure GPU is available
 2. **Use a faster model:** Select `small` or `base` in the dropdown
-3. **Limit CPU:** Edit `.env` and set `WHISPER_THREADS=4`
+3. **Limit CPU:** Edit `.env` and set `WHISPER_THREADS=4`. The defaults 0 means detected automatically
 
 ### "API shows as disconnected"
 Check if containers are running:
