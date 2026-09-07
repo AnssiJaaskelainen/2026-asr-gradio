@@ -52,7 +52,7 @@ Create an empty folder named `transcripts` in your project directory. This is wh
 
 1. Open **Docker Desktop** from the Start menu
 2. Wait until it shows **"Docker Desktop is running"** in the system tray
-3. Right-click the Docker icon in the system tray → **"Open in terminal"**
+3. Click the >_ Terminal in lower right hand side of the docker desktop to open inbuild terminal (Note! you might need to enable it first)
 
 ### Step 3: Start the application
 
