@@ -89,6 +89,9 @@ You should see the Whisper ASR interface with a green **"API Connected"** status
 
 ### Stopping the application
 
+- In Docker desktop Containers menu, just click the Blue rectangle under Actions
+
+
 ```bash
 docker compose down
 ```
