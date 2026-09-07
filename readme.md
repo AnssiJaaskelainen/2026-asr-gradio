@@ -15,17 +15,36 @@ Turn your audio and video files into text automatically. This application uses O
 | Windows | 10 or 11 |
 | Docker Desktop | 4.0+ (with WSL 2 enabled) |
 
+### Step 0: Download the Repository
+
+Choose one of the following non-command-line methods to download the project or use cli of familiar with it:
+
+#### Option A: Download as a ZIP File (Easiest)
+1. Open the repository page on GitHub in your web browser.
+2. Click the green **`<> Code`** button near the top right.
+3. Select **Download ZIP**.
+4. Extract the `.zip` file to your preferred location (e.g., `C:\Projects\Whisper-ASR`).
+
+#### Option B: Clone using GitHub Desktop
+1. Open **GitHub Desktop**.
+2. Click **File** → **Clone repository...**
+3. Select the repository from your list or paste the repository URL.
+4. Choose your local folder destination and click **Clone**.
+
+---
+
 ### Step 1: Create the transcripts folder
 
 Create an empty folder named `transcripts` in your project directory. This is where your transcriptions will be saved.
 
 ```
 📁 your-project-folder/
-   ├── 📁 api.py
-   ├── 📁 app.py
+   ├── api.py
+   ├── app.py
    ├── 📁 config/
-   ├── 📁 dockerfile
-   ├── 📁 docker-compose.yaml
+   ├── dockerfile
+   ├── docker-compose.yaml
+   ├── +other needed files..
    └── 📁 transcripts/    ← Create this folder
 ```
 
@@ -33,7 +52,7 @@ Create an empty folder named `transcripts` in your project directory. This is wh
 
 1. Open **Docker Desktop** from the Start menu
 2. Wait until it shows **"Docker Desktop is running"** in the system tray
-3. Right-click the Docker icon in the system tray → **"Open in terminal"**
+3. Click the >_ Terminal in lower right hand side of the docker desktop to open inbuild terminal (Note! you might need to enable it first)
 
 ### Step 3: Start the application
 
@@ -42,9 +61,16 @@ cd C:\path\to\your\project-folder
 docker compose up -d --build
 ```
 
-Wait about 30 seconds for the first-time setup (it downloads the AI model).
+First build takes some time (estimated 2-3 minutes)
+* You can follow the progress on Builds tab / Active builds
+* There's two active builds on going, one for API and one for the UI part
+* After build Windows firewall might say something about docker network access, this needs to be allowed
+* When build is done check Containers menu, should see > Green dot 2026-asr-gradio
+   * If you click > it should show api1- and gradio-1
 
 ### Step 4: Open the app
+
+Either click the 10002:10002 link under ports in docker desktop or
 
 Open your browser and go to:
 
@@ -62,6 +88,9 @@ You should see the Whisper ASR interface with a green **"API Connected"** status
 4. Your transcription appears below, and a `.txt` file is saved to the `transcripts` folder
 
 ### Stopping the application
+
+- In Docker desktop Containers menu, just click the Blue rectangle under Actions
+- Or in terminal 
 
 ```bash
 docker compose down
@@ -82,7 +111,7 @@ Upload a `.zip` or `.tar` file containing multiple media files. The app extracts
 
 ### 🌍 Languages
 - **Auto Detect** - Automatically identify the spoken language
-- **Manual Selection** - Choose from 100+ supported languages
+- **Manual Selection** - Currently only Finnish and English in list, but feel free to update
 
 ### ⏱️ Timestamps
 Enable timestamps to see when each segment was spoken:
@@ -94,6 +123,7 @@ Enable timestamps to see when each segment was spoken:
 
 ### ⚡ Live Updates
 Watch the transcription appear in real-time as the AI processes your file.
+- This is active only in single file mode
 
 ---
 
@@ -149,7 +179,7 @@ docker compose ps
 ### "It's too slow!"
 1. **Enable GPU:** Install NVIDIA Container Toolkit and ensure GPU is available
 2. **Use a faster model:** Select `small` or `base` in the dropdown
-3. **Limit CPU:** Edit `.env` and set `WHISPER_THREADS=4`
+3. **Limit CPU:** Edit `.env` and set `WHISPER_THREADS=4`. The defaults 0 means detected automatically
 
 ### "API shows as disconnected"
 Check if containers are running:

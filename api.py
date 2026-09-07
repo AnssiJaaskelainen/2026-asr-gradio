@@ -69,7 +69,9 @@ class HardwareInfo:
     workers: int
     compute_type: str
 
+
 def detect_hardware() -> HardwareInfo:
+    """Detect available hardware and return optimal configuration."""
     cores_available = multiprocessing.cpu_count()
     threads = WHISPER_THREADS if WHISPER_THREADS > 0 else max(1, cores_available // 2)
     workers = min(4, cores_available // 2)
@@ -83,14 +85,17 @@ def detect_hardware() -> HardwareInfo:
         pass
     
     device = "cuda" if gpu_count > 0 else "cpu"
-    if device == "cuda": compute_type = "float16"
-    elif CPU_OPTIMIZED: compute_type = "int8"
-    else: compute_type = "int8_float16"
+    
+    # 'float16' is for GPU. 'int8' is the most compatible and fastest for all CPUs.
+    if device == "cuda": 
+        compute_type = "float16"
+    else: 
+        compute_type = "int8" 
         
     return HardwareInfo(device, threads, workers, compute_type)
 
-HARDWARE_INFO = detect_hardware()
 
+HARDWARE_INFO = detect_hardware()
 # =============================================================================
 # Model Management
 # =============================================================================

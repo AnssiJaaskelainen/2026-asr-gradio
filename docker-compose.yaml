@@ -1,16 +1,18 @@
 services:
   api:
     build: .
-    user: "${UID}:${GID}"
     ports:
       - "10001:10001"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     env_file:
       - .env
     environment:
       - TZ=${TZ:-UTC}
     volumes:
-      - ./caches:/app/caches
-      - ./models:/app/models
+      - whisper_caches:/app/caches
+      - whisper_models:/app/models
       - ./transcripts:/transcripts
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
@@ -27,7 +29,9 @@ services:
 
   gradio:
     build: .
-    user: "${UID}:${GID}"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     ports:
       - "10002:10002"
     env_file:
@@ -42,3 +46,7 @@ services:
       api:
         condition: service_healthy
     command: ["python3", "/app/app.py"]
+
+volumes:
+  whisper_models:
+  whisper_caches:
