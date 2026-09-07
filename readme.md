@@ -15,6 +15,24 @@ Turn your audio and video files into text automatically. This application uses O
 | Windows | 10 or 11 |
 | Docker Desktop | 4.0+ (with WSL 2 enabled) |
 
+### Step 0: Download the Repository
+
+Choose one of the following non-command-line methods to download the project or use cli of familiar with it:
+
+#### Option A: Download as a ZIP File (Easiest)
+1. Open the repository page on GitHub in your web browser.
+2. Click the green **`<> Code`** button near the top right.
+3. Select **Download ZIP**.
+4. Extract the `.zip` file to your preferred location (e.g., `C:\Projects\Whisper-ASR`).
+
+#### Option B: Clone using GitHub Desktop
+1. Open **GitHub Desktop**.
+2. Click **File** → **Clone repository...**
+3. Select the repository from your list or paste the repository URL.
+4. Choose your local folder destination and click **Clone**.
+
+---
+
 ### Step 1: Create the transcripts folder
 
 Create an empty folder named `transcripts` in your project directory. This is where your transcriptions will be saved.
