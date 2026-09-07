@@ -61,7 +61,10 @@ cd C:\path\to\your\project-folder
 docker compose up -d --build
 ```
 
-Wait about 30 seconds for the first-time setup (it downloads the AI model).
+First build takes some time (estimated 2-3 minutes)
+* You can follow the progress on Builds tab / Active builds
+* There's two active builds on going, one for API and one for the UI part
+* After build Windows firewall might say something about docker network access, this needs to be allowed
 
 ### Step 4: Open the app
 
