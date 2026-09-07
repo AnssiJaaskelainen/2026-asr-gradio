@@ -39,11 +39,12 @@ Create an empty folder named `transcripts` in your project directory. This is wh
 
 ```
 📁 your-project-folder/
-   ├── 📁 api.py
-   ├── 📁 app.py
+   ├── api.py
+   ├── app.py
    ├── 📁 config/
-   ├── 📁 dockerfile
-   ├── 📁 docker-compose.yaml
+   ├── dockerfile
+   ├── docker-compose.yaml
+   ├── +other needed files..
    └── 📁 transcripts/    ← Create this folder
 ```
 
