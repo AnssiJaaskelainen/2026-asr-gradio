@@ -65,8 +65,12 @@ First build takes some time (estimated 2-3 minutes)
 * You can follow the progress on Builds tab / Active builds
 * There's two active builds on going, one for API and one for the UI part
 * After build Windows firewall might say something about docker network access, this needs to be allowed
+* When build is done check Containers menu, should see > Green dot 2026-asr-gradio
+   * If you click > it should show api1- and gradio-1
 
 ### Step 4: Open the app
+
+Either click the 10002:10002 link under ports in docker desktop or
 
 Open your browser and go to:
 
