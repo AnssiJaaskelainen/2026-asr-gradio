@@ -1,0 +1,28 @@
+# syntax=docker/dockerfile:1.4
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.12 \
+    python3-pip \
+    ffmpeg \
+    curl \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY api.py app.py ./
+COPY config/ ./config/
+RUN mkdir -p /app/models /app/caches /transcripts
+
+EXPOSE 10001 10002
+
+CMD ["python3", "/app/api.py"]

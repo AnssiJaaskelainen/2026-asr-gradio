@@ -1,5 +1,36 @@
 services:
-  api:
+  api-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    ports:
+      - "10001:10001"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ:-UTC}
+      - CUDA_VISIBLE_DEVICES=0
+    volumes:
+      - whisper_caches:/app/caches
+      - whisper_models:/app/models
+      - ./transcripts:/transcripts
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          memory: ${API_MEMORY_LIMIT:-16g}
+    command: ["python3", "/app/api.py"]
+
+  api-cpu:
     build: .
     ports:
       - "10001:10001"
@@ -16,22 +47,42 @@ services:
       - ./transcripts:/transcripts
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:10001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 180s
     deploy:
       resources:
         limits:
-          memory: ${API_MEMORY_LIMIT:-16g}
+          memory: ${API_MEMORY_LIMIT:-8g}
+    command: ["python3", "/app/api.py"]
 
-  gradio:
+  gradio-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    ports:
+      - "10002:10002"
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ:-UTC}
+      - CUDA_VISIBLE_DEVICES=0
+    volumes:
+      - whisper_caches:/app/caches
+      - whisper_models:/app/models
+      - ./transcripts:/transcripts
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    depends_on:
+      - api-gpu
+    command: ["python3", "/app/app.py"]
+
+  gradio-cpu:
     build: .
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
     ports:
       - "10002:10002"
     env_file:
@@ -39,12 +90,13 @@ services:
     environment:
       - TZ=${TZ:-UTC}
     volumes:
+      - whisper_caches:/app/caches
+      - whisper_models:/app/models
       - ./transcripts:/transcripts
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     depends_on:
-      api:
-        condition: service_healthy
+      - api-cpu
     command: ["python3", "/app/app.py"]
 
 volumes:
