@@ -7,8 +7,13 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 WORKDIR /app
 
+# Install Python 3.12 from the deadsnakes PPA
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y --no-install-recommends \
     python3.12 \
+    python3.12-venv \
     python3-pip \
     ffmpeg \
     curl \
