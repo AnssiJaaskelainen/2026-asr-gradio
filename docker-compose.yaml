@@ -17,8 +17,6 @@ services:
       - whisper_caches:/app/caches
       - whisper_models:/app/models
       - ./transcripts:/transcripts
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     deploy:
       resources:
         reservations:
@@ -45,8 +43,6 @@ services:
       - whisper_caches:/app/caches
       - whisper_models:/app/models
       - ./transcripts:/transcripts
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     deploy:
       resources:
         limits:
@@ -68,8 +64,6 @@ services:
       - whisper_caches:/app/caches
       - whisper_models:/app/models
       - ./transcripts:/transcripts
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     deploy:
       resources:
         reservations:
@@ -93,8 +87,6 @@ services:
       - whisper_caches:/app/caches
       - whisper_models:/app/models
       - ./transcripts:/transcripts
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     depends_on:
       - api-cpu
     command: ["python3", "/app/app.py"]
