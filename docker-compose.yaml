@@ -60,6 +60,7 @@ services:
     environment:
       - TZ=${TZ:-UTC}
       - CUDA_VISIBLE_DEVICES=0
+      - API_URL=http://api-gpu:10001  # <--- Tells GPU UI to talk to GPU API
     volumes:
       - whisper_caches:/app/caches
       - whisper_models:/app/models
@@ -83,6 +84,7 @@ services:
       - .env
     environment:
       - TZ=${TZ:-UTC}
+      - API_URL=http://api-cpu:10001   # <--- Tells CPU UI to talk to CPU API
     volumes:
       - whisper_caches:/app/caches
       - whisper_models:/app/models

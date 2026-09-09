@@ -71,6 +71,8 @@ Use this if you have an NVIDIA graphics card and the NVIDIA Container Toolkit in
 
 ```bash
 docker compose up -d --build api-gpu gradio-gpu
+# Note! You will get this if running gpu enabled version without a gpu
+# Error response from daemon: could not select device driver "nvidia" with capabilities: [[gpu]]
 ```
 
 ### Option B: Use CPU (Standard 💻)
