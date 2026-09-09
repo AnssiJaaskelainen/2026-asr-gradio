@@ -2,7 +2,7 @@ services:
   api-gpu:
     build:
       context: .
-      dockerfile: Dockerfile.gpu
+      dockerfile: dockerfile.gpu
     ports:
       - "10001:10001"
     dns:
@@ -56,7 +56,7 @@ services:
   gradio-gpu:
     build:
       context: .
-      dockerfile: Dockerfile.gpu
+      dockerfile: dockerfile.gpu
     ports:
       - "10002:10002"
     env_file:
